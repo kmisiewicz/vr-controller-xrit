@@ -6,18 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- A new feature
+- Climbing Provider
 
-## [1.0.0-pre.1] - 2021-06-20
+## [1.0.0-pre.1] - 2021-10-20
 ### Added
-- Something
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
+- Basic movement providers substitutes:
+  - Continuous movement and turning with vignette to help with motion sickness
+  - Snap turning an teleportation with blinking (fading screen to black)
+- Real-space movement: body collisions with head leaning over small obstacles
