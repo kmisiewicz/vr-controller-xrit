@@ -5,10 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.0-pre.2] - 2021-11-24
 ### Added
 - Climbing Provider
+- Gravity Provider (collider floating over ground allows to climb bumps and stairs, contains ground checker)
+- Demo Scene
 
-## [1.0.0-pre.1] - 2021-10-20
+### Fixed
+- Missing stuff from prefabs and demo scene
+
+## [1.0.0-pre.1] - 2021-10-18
 ### Added
 - Basic movement providers substitutes:
   - Continuous movement and turning with vignette to help with motion sickness

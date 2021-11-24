@@ -139,7 +139,7 @@ namespace Chroma.XR.Locomotion
 
         public bool RequestRayExclusivity(XRRayInteractor ray)
         {
-            if (currentRay != null && ray != currentRay)
+            if (currentRay != null && ray != currentRay && !this.enabled)
                 return false;
 
             currentRay = ray;

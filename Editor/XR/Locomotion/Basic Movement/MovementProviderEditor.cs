@@ -7,8 +7,8 @@ namespace Chroma.XR.Locomotion
     [CustomEditor(typeof(MovementProvider))]
     public class MovementProviderEditor : Editor
     {
-        SerializedProperty speed, maxVelocityChange, strafe, useVignette, forwardSource;
-        SerializedProperty locomotionSystem, vignette, forwardSources, body;
+        SerializedProperty speed, maxVelocityChange, strafe, useVignette, forwardSource;//, requireGrounded;
+        SerializedProperty locomotionSystem, vignette, forwardSources, body;//, groundChecker;
         SerializedProperty leftHandInput, rightHandInput, inputLeft, inputRight;
         SerializedProperty startMoveEvent, stopMoveEvent;
 
@@ -24,11 +24,13 @@ namespace Chroma.XR.Locomotion
             strafe = serializedObject.FindProperty("enableStrafe");
             useVignette = serializedObject.FindProperty("useVignette");
             forwardSource = serializedObject.FindProperty("forwardSource");
+            //requireGrounded = serializedObject.FindProperty("requireGrounded");
 
             locomotionSystem = serializedObject.FindProperty("m_System");
             vignette = serializedObject.FindProperty("vignette");
             forwardSources = serializedObject.FindProperty("forwardSources");
             body = serializedObject.FindProperty("body");
+            //groundChecker = serializedObject.FindProperty("groundChecker");
 
             leftHandInput = serializedObject.FindProperty("leftHandInput");
             rightHandInput = serializedObject.FindProperty("rightHandInput");
@@ -50,6 +52,7 @@ namespace Chroma.XR.Locomotion
             EditorGUILayout.PropertyField(forwardSource, new GUIContent("Forward Source"), true);
             EditorGUILayout.PropertyField(strafe, new GUIContent("Enable Strafe"), true);
             EditorGUILayout.PropertyField(useVignette, new GUIContent("Use Vignette"), true);
+            //EditorGUILayout.PropertyField(requireGrounded, new GUIContent("Require Grounded"), true);
 
             GUIStyle foldoutStyle = EditorStyles.foldout;
             foldoutStyle.fontStyle = FontStyle.Bold;
@@ -62,6 +65,7 @@ namespace Chroma.XR.Locomotion
 
                 EditorGUILayout.PropertyField(locomotionSystem, new GUIContent("System"), true);
                 EditorGUILayout.PropertyField(body, new GUIContent("Body"), true);
+                //EditorGUILayout.PropertyField(groundChecker, new GUIContent("Ground Checker"), true);
                 EditorGUILayout.PropertyField(vignette, new GUIContent("Vignette"), true);
                 foldoutStyle.fontStyle = FontStyle.Normal;
                 EditorGUILayout.PropertyField(forwardSources, new GUIContent("Forward Sources"), true);

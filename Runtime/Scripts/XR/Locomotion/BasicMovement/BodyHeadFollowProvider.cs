@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using Chroma.Utility;
 
 namespace Chroma.XR.Locomotion
 {
@@ -40,8 +41,7 @@ namespace Chroma.XR.Locomotion
             // Get head to body position difference
             Vector3 headPosition = _head.position;
             Vector3 bodyPosition = transform.position;
-            headPosition.y = bodyPosition.y = 0;
-            Vector3 motion = headPosition - bodyPosition;
+            Vector3 motion = (headPosition - bodyPosition).RemoveDotVector(transform.up, out _);
 
             // If player can lean, then only move body collider when head exceeds neckLength, otherwise move always
             if (colliderPositionUpdateMethod == HeadFollowMethod.AllowLeaning)

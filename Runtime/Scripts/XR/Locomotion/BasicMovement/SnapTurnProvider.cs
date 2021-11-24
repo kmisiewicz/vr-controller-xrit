@@ -32,7 +32,7 @@ namespace Chroma.XR.Locomotion
         float _timeStarted = 0f;
 
 
-        private void Awake()
+        private new void Awake()
         {
             base.Awake();
             leftHandSnapTurnAction.action.Enable();

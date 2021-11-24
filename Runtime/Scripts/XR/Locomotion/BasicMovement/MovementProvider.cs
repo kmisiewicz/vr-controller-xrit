@@ -107,6 +107,12 @@ namespace Chroma.XR.Locomotion
         [SerializeField, Tooltip("Player's main Rigidbody.")]
         Rigidbody body;
 
+        [SerializeField, Tooltip("Require controller to be grounded to be able to move. Must set a reference to GroundedChecker.")]
+        bool requireGrounded = false;
+
+        [SerializeField, Tooltip("Ground check script.")]
+        GravityProvider gravityProvider = null;
+
 
         /// <summary>This event will be called when player <see cref="Rigidbody"/> starts moving.</summary>
         public UnityEvent startedMoving;
@@ -125,6 +131,7 @@ namespace Chroma.XR.Locomotion
         private new void Awake()
         {
             base.Awake();
+
             if (body == null)
                 body = GetComponentInParent<Rigidbody>();
             body.freezeRotation = true;
@@ -172,8 +179,8 @@ namespace Chroma.XR.Locomotion
 
         protected virtual Vector2 ReadInput()
         {
-            var leftHandValue = leftHandMoveAction.action?.ReadValue<Vector2>() ?? Vector2.zero;
-            var rightHandValue = rightHandMoveAction.action?.ReadValue<Vector2>() ?? Vector2.zero;
+            var leftHandValue = leftHandInput ? leftHandMoveAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
+            var rightHandValue = rightHandInput ? rightHandMoveAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
             return leftHandValue + rightHandValue;
         }
 
@@ -185,8 +192,8 @@ namespace Chroma.XR.Locomotion
         {
             targetVelocity = Vector3.zero;
 
-            if (input == Vector2.zero)
-                return Vector3.zero;
+            //if (input == Vector2.zero)
+            //    return Vector3.zero;
 
             var xrRig = system.xrRig;
             if (xrRig == null)
@@ -219,11 +226,8 @@ namespace Chroma.XR.Locomotion
             var velocityInRigSpace = forwardRotation * inputMove * moveSpeed;
             targetVelocity = rigTransform.TransformDirection(velocityInRigSpace);
 
-            Vector3 velocity = body.velocity;
-            Vector3 velocityChange = (targetVelocity - velocity);
-            velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
-            velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
-            velocityChange.y = 0;
+            Vector3 velocityChange = (targetVelocity - body.velocity);
+            velocityChange = Vector3.ProjectOnPlane(velocityChange, transform.up);
 
             return velocityChange;
         }
