@@ -7,8 +7,8 @@ namespace Chroma.XR.Locomotion
     [CustomEditor(typeof(MovementProvider))]
     public class MovementProviderEditor : Editor
     {
-        SerializedProperty speed, maxVelocityChange, strafe, useVignette, forwardSource;
-        SerializedProperty locomotionSystem, vignette, forwardSources, body;//, groundChecker;
+        SerializedProperty speed, maxVelocityChange, strafe, useVignette, forwardSource, inAirControl, slopeControl;
+        SerializedProperty locomotionSystem, vignette, forwardSources, body, gravityProvider;
         SerializedProperty leftHandInput, rightHandInput, inputLeft, inputRight;
         SerializedProperty startMoveEvent, stopMoveEvent;
 
@@ -27,12 +27,13 @@ namespace Chroma.XR.Locomotion
             strafe = serializedObject.FindProperty("_EnableStrafe");
             useVignette = serializedObject.FindProperty("_UseVignette");
             forwardSource = serializedObject.FindProperty("_ForwardSource");
+            inAirControl = serializedObject.FindProperty("_InAirControlMultiplier");
 
             locomotionSystem = serializedObject.FindProperty("m_System");
             vignette = serializedObject.FindProperty("_Vignette");
             forwardSources = serializedObject.FindProperty("_ForwardSources");
             body = serializedObject.FindProperty("_Body");
-            //gravityProvider = serializedObject.FindProperty("_GravityProvider");
+            gravityProvider = serializedObject.FindProperty("_GravityProvider");
 
             leftHandInput = serializedObject.FindProperty("_LeftHandInput");
             rightHandInput = serializedObject.FindProperty("_RightHandInput");
@@ -52,15 +53,14 @@ namespace Chroma.XR.Locomotion
             GUIStyle foldoutStyle = new GUIStyle(EditorStyles.foldout);
             foldoutStyle.fontStyle = FontStyle.Bold;
 
-            EditorFunctions.DrawMultiplePropertyFields(new[] { speed, maxVelocityChange, forwardSource, strafe, useVignette });
+            EditorFunctions.DrawMultiplePropertyFields(new[] { speed, maxVelocityChange, forwardSource, strafe, useVignette, inAirControl });
 
             EditorGUILayout.Space();
             showReferences = EditorGUILayout.Foldout(showReferences, new GUIContent("References"), true, foldoutStyle);
             if (showReferences)
             {
                 EditorGUI.indentLevel++;
-                EditorFunctions.DrawMultiplePropertyFields(new[] { locomotionSystem, body, vignette, forwardSources });
-                ////EditorGUILayout.PropertyField(gravityProvider);
+                EditorFunctions.DrawMultiplePropertyFields(new[] { locomotionSystem, body, vignette, forwardSources, gravityProvider });
                 EditorGUI.indentLevel--;
             }
 

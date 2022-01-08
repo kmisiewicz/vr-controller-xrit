@@ -108,7 +108,7 @@ namespace Chroma.XR.Locomotion
         Rigidbody _Body;
 
         [SerializeField, Tooltip("In air control multiplier")]
-        float _InAirMultiplier = 1f;
+        float _InAirControlMultiplier = 1f;
 
         [SerializeField, Tooltip("Ground check script.")]
         GravityProvider _GravityProvider = null;
@@ -254,6 +254,12 @@ namespace Chroma.XR.Locomotion
 
             Vector3 velocityChange = (targetVelocity - _Body.velocity);
             velocityChange = Vector3.ProjectOnPlane(velocityChange, transform.up);
+
+            if (_GravityProvider != null)
+            {
+                if (!_GravityProvider.IsGrounded)
+                    velocityChange *= _InAirControlMultiplier;
+            }
 
             return velocityChange;
         }
