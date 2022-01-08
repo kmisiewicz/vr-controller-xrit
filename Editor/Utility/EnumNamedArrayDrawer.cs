@@ -9,7 +9,9 @@ namespace Chroma.Utility
     [CustomPropertyDrawer(typeof(EnumNamedArray), true)]
     public class EnumNamedArrayDrawer : PropertyDrawer
     {
-        bool showElements = true;
+        bool showElements = false;
+
+        const int INDENT_WIDTH = 15;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -18,7 +20,8 @@ namespace Chroma.Utility
             var values = property.FindPropertyRelative("Values");
             var names = property.FindPropertyRelative("Names");
 
-            showElements = EditorGUI.Foldout(new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight), showElements, label.text + $" ({values.arraySize})", true);
+            showElements = EditorGUI.Foldout(new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight),
+                showElements, new GUIContent(label.text + $" ({values.arraySize})", property.tooltip), true);
             if (showElements)
             {
                 EditorGUI.indentLevel++;
@@ -28,13 +31,14 @@ namespace Chroma.Utility
                     var name = names.GetArrayElementAtIndex(i);
                     var value = values.GetArrayElementAtIndex(i);
 
-                    position.y += EditorGUIUtility.singleLineHeight;
-
+                    position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
                     var indentedRect = EditorGUI.IndentedRect(position);
+                    indentedRect.x -= INDENT_WIDTH * EditorGUI.indentLevel;
 
-                    EditorGUI.LabelField(new Rect(position.x, position.y, EditorGUIUtility.labelWidth, EditorGUIUtility.singleLineHeight), name.stringValue);
-                    EditorGUI.PropertyField(new Rect(position.x + EditorGUIUtility.labelWidth - indentedRect.x / 2, position.y,
-                        EditorGUIUtility.currentViewWidth - EditorGUIUtility.labelWidth - indentedRect.x / 4, EditorGUIUtility.singleLineHeight), value, GUIContent.none, true);
+                    indentedRect = EditorGUI.PrefixLabel(indentedRect, new GUIContent(SplitCamelCase(name.stringValue)));
+                    indentedRect.x -= INDENT_WIDTH * EditorGUI.indentLevel;
+                    indentedRect.width += INDENT_WIDTH * (EditorGUI.indentLevel * 2);
+                    EditorGUI.PropertyField(indentedRect, value, GUIContent.none, true);
                 }
 
                 EditorGUI.indentLevel--;
@@ -47,7 +51,13 @@ namespace Chroma.Utility
         {
             var values = property.FindPropertyRelative("Values");
 
-            return showElements ? (values.arraySize + 1) * EditorGUIUtility.singleLineHeight : EditorGUIUtility.singleLineHeight;
+            return showElements ? (values.arraySize + 1) * (EditorGUIUtility.singleLineHeight 
+                + EditorGUIUtility.standardVerticalSpacing) : EditorGUIUtility.singleLineHeight;
+        }
+
+        private string SplitCamelCase(string input)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(input, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
         }
     }
 }

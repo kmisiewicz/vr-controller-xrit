@@ -9,34 +9,34 @@ namespace Chroma.XR.Locomotion
     {
         [SerializeField]
         [Tooltip("Multiplier of force applied after letting go off ClimbingInteractable.")]
-        float pullForce = 100f;
+        float _PullForce = 100f;
 
         [SerializeField]
         [Tooltip("Minimal magnitude of controller's velocity while letting go off ClimbInteractable to apply force.")]
-        float pullThreshold = 1f;
+        float _PullThreshold = 1f;
 
         [SerializeField]
         [Tooltip("Gravity damp factor applied after pulling from Climbing Interactable for gravityDampTime seconds.")]
-        float gravityDampFactor = 0.9f;
+        float _GravityDampFactor = 0.9f;
 
         [SerializeField]
         [Tooltip("Duration (in seconds) of gravity damping after pulling from Climbing Interactable.")]
-        float gravityDampTime = 1.5f;
+        float _GravityDampTime = 1.5f;
 
         [SerializeField]
         [Tooltip("Layers to check for new ground while climbing on ledge.")]
-        LayerMask ledgeLayerMask;
+        LayerMask _LedgeLayerMask;
 
         [SerializeField, Min(0f)]
         [Tooltip("Duration (in seconds) of climb animation.")]
-        float climbOnLedgeDuration = 0.2f;
+        float _ClimbOnLedgeDuration = 0.2f;
 
         [SerializeField, Min(0f)]
         [Tooltip("Minimal height player's head needs to be above ledge to consider climbing on it.")]
-        float minHeightOverLedge = 0.2f;
+        float _MinHeightOverLedge = 0.2f;
 
         [SerializeField]
-        LocomotionSystemExtender locomotionSystemExtender;
+        LocomotionSystemExtender _LocomotionSystemExtender;
 
 
         ControllerInputManager _inputs = null;
@@ -47,8 +47,8 @@ namespace Chroma.XR.Locomotion
         {
             base.Awake();
             _rb = GetComponent<Rigidbody>();
-            if (locomotionSystemExtender == null)
-                locomotionSystemExtender = FindObjectOfType<LocomotionSystemExtender>();
+            if (_LocomotionSystemExtender == null)
+                _LocomotionSystemExtender = FindObjectOfType<LocomotionSystemExtender>();
         }
 
         private void FixedUpdate()
@@ -74,7 +74,7 @@ namespace Chroma.XR.Locomotion
             DOTween.Kill("ledgeClimb");
 
             // Get component to poll controller's velocity and request exclusive operation, return if can't do both
-            if (!args.interactor.TryGetComponent(out _inputs) || !locomotionSystemExtender.RequestExclusivity(this))
+            if (!args.interactorObject.transform.TryGetComponent(out _inputs) || !_LocomotionSystemExtender.RequestExclusivity(this))
             {
                 _inputs = null;
                 return;
@@ -88,7 +88,7 @@ namespace Chroma.XR.Locomotion
         public void EndClimbing(SelectExitEventArgs args)
         {
             // If player is climbing with another hand (controller), don't exit climbing mode (return)
-            if (args.interactor.GetComponent<ControllerInputManager>() != _inputs)
+            if (args.interactorObject.transform.GetComponent<ControllerInputManager>() != _inputs)
                 return;
 
             // If player leans behind ledge, climb on it, 
@@ -98,7 +98,7 @@ namespace Chroma.XR.Locomotion
             else
             {
                 _rb.isKinematic = false;
-                locomotionSystemExtender.FinishExclusivity(this);
+                _LocomotionSystemExtender.FinishExclusivity(this);
                 StartCoroutine(Pull(_inputs));
             }
 
@@ -112,9 +112,9 @@ namespace Chroma.XR.Locomotion
 
             // Add force if controller's velocity square magnitude is bigger than pullThreshold
             var pullVelocity = -inputs.Velocity;
-            if (pullVelocity.magnitude > pullThreshold)
+            if (pullVelocity.magnitude > _PullThreshold)
             {
-                _rb.AddForce(transform.rotation * pullVelocity.normalized * pullForce);
+                _rb.AddForce(transform.rotation * pullVelocity.normalized * _PullForce);
                 pulled = true;
             }
 
@@ -125,9 +125,9 @@ namespace Chroma.XR.Locomotion
                     yield return new WaitForFixedUpdate();
 
                 float t = 0f;
-                while (t < gravityDampTime)
+                while (t < _GravityDampTime)
                 {
-                    _rb.AddForce(Physics.gravity * -gravityDampFactor * Time.fixedDeltaTime * _rb.mass);
+                    _rb.AddForce(Physics.gravity * -_GravityDampFactor * Time.fixedDeltaTime * _rb.mass);
                     t += Time.fixedDeltaTime;
                     yield return new WaitForFixedUpdate();
                 }
@@ -137,18 +137,17 @@ namespace Chroma.XR.Locomotion
         private bool ShouldClimbOnLedge(out Vector3 newPosition)
         {
             newPosition = Vector3.zero;
-            Vector3 cameraPosition = system.xrRig.cameraGameObject.transform.position;
+            Vector3 cameraPosition = system.xrOrigin.Camera.transform.position;
 
             // Check if player's head is at least 'minHeightOverLedge' over new ground (max is player height)
             if (Physics.Raycast(cameraPosition, Vector3.down, out RaycastHit hit,
-                system.xrRig.cameraInRigSpaceHeight, ledgeLayerMask))
+                system.xrOrigin.CameraInOriginSpaceHeight, _LedgeLayerMask))
             {
-                if (hit.distance > minHeightOverLedge)
+                if (hit.distance > _MinHeightOverLedge)
                 {
                     // Shoot raycast up to check if player will fit on new ground
-                    float upDistance = system.xrRig.cameraInRigSpaceHeight - hit.distance + 0.1f;
-                    if (!Physics.Raycast(system.xrRig.cameraGameObject.transform.position, Vector3.up, out _,
-                        upDistance, ledgeLayerMask))
+                    float upDistance = system.xrOrigin.CameraInOriginSpaceHeight - hit.distance + 0.1f;
+                    if (!Physics.Raycast(system.xrOrigin.Camera.transform.position, Vector3.up, out _, upDistance, _LedgeLayerMask))
                     {
                         newPosition = hit.point;
                         return true;
@@ -162,18 +161,18 @@ namespace Chroma.XR.Locomotion
         {
             // Tween XRRig to new ground (shortcuts don't work without assembly definition setup)
             //_rb.DOMove(newPosition, climbOnLedgeDuration, false).SetId("ledgeClimb");
-            DOTween.To(() => _rb.position, x => _rb.position = x, newPosition, climbOnLedgeDuration)
+            DOTween.To(() => _rb.position, x => _rb.position = x, newPosition, _ClimbOnLedgeDuration)
                 .SetUpdate(UpdateType.Fixed)
                 .SetId("ledgeClimb");
-            yield return new WaitForSeconds(climbOnLedgeDuration);
+            yield return new WaitForSeconds(_ClimbOnLedgeDuration);
 
             // Make sure player object is in correct posiiton
-            var cameraPosition = new Vector3(newPosition.x, newPosition.y + system.xrRig.cameraInRigSpaceHeight, newPosition.z);
-            system.xrRig.MoveCameraToWorldLocation(cameraPosition);
+            var cameraPosition = new Vector3(newPosition.x, newPosition.y + system.xrOrigin.CameraInOriginSpaceHeight, newPosition.z);
+            system.xrOrigin.MoveCameraToWorldLocation(cameraPosition);
 
             // Restore default movemnt
             _rb.isKinematic = false;
-            locomotionSystemExtender.FinishExclusivity(this);
+            _LocomotionSystemExtender.FinishExclusivity(this);
         }
     }
 }

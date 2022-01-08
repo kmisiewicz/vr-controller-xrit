@@ -110,7 +110,7 @@ namespace Chroma.XR.Locomotion
 
         public void HoverEntered(HoverEnterEventArgs args)
         {
-            var teleportationArea = args.interactable as TeleportationArea;
+            var teleportationArea = args.interactableObject as TeleportationArea;
             if (teleportationArea != null && areaReticle != null)
             {
                 _lineVisual.AttachCustomReticle(areaReticle);
@@ -120,7 +120,7 @@ namespace Chroma.XR.Locomotion
 
         public void HoverExited(HoverExitEventArgs args)
         {
-            var teleportationArea = args.interactable as TeleportationArea;
+            var teleportationArea = args.interactableObject as TeleportationArea;
             if (teleportationArea != null && areaReticle != null)
             {
                 _reticleEnabled = false;

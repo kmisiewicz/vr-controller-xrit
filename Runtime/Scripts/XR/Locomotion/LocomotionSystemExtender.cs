@@ -6,6 +6,8 @@ namespace Chroma.XR.Locomotion
     [RequireComponent(typeof(LocomotionProvider))]
     public class LocomotionSystemExtender : MonoBehaviour
     {
+        [ChromaBar]
+
         [SerializeField] MovementProvider movementProvider = null;
         [SerializeField] ContinuousTurnProvider continuousTurnProvider = null;
         [SerializeField] SnapTurnProvider snapTurnProvider = null;

@@ -7,16 +7,16 @@ namespace Chroma.XR.Locomotion
 {
     public class ContinuousTurnProvider : ActionBasedContinuousTurnProvider
     {
-        [SerializeField] bool useVignette = true;
-        [SerializeField] VignetteController vignette = null;
+        [SerializeField] bool _UseVignette = true;
+        [SerializeField] VignetteController _Vignette = null;
 
-        [SerializeField] bool leftHandInput = true;
-        [SerializeField] bool rightHandInput = true;
+        [SerializeField] bool _LeftHandInput = true;
+        [SerializeField] bool _RightHandInput = true;
 
         /// <summary>The startedTurning action will be called on continuous movement start (after player pushes controller stick).</summary>
-        public UnityEvent startedTurning;
+        public UnityEvent StartedTurning;
         /// <summary>The finishedTurning action will be called on continuous movement stop (after player releases controller stick).</summary>
-        public UnityEvent finishedTurning;
+        public UnityEvent FinishedTurning;
 
         public bool IsTurning { get; private set; } = false;
 
@@ -39,28 +39,28 @@ namespace Chroma.XR.Locomotion
             {
                 if (IsTurning)
                 {
-                    if (useVignette && vignette) 
-                        vignette.FadeIn();
-                    startedTurning?.Invoke();
+                    if (_UseVignette && _Vignette) 
+                        _Vignette.FadeIn();
+                    StartedTurning?.Invoke();
                 }
                 else
                 {
-                    if (useVignette && vignette) 
-                        vignette.FadeOut();
-                    finishedTurning?.Invoke();
+                    if (_UseVignette && _Vignette) 
+                        _Vignette.FadeOut();
+                    FinishedTurning?.Invoke();
                 }
             }
             _wasTurning = IsTurning;
         }
 
-        public void EnableLeftHandInput(bool enable) => leftHandInput = enable;
+        public void EnableLeftHandInput(bool enable) => _LeftHandInput = enable;
 
-        public void EnableRightHandInput(bool enable) => rightHandInput = enable;
+        public void EnableRightHandInput(bool enable) => _RightHandInput = enable;
 
         protected override Vector2 ReadInput()
         {
-            var leftHandValue = leftHandInput ? leftHandTurnAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
-            var rightHandValue = rightHandInput ? rightHandTurnAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
+            var leftHandValue = _LeftHandInput ? leftHandTurnAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
+            var rightHandValue = _RightHandInput ? rightHandTurnAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
 
             return leftHandValue + rightHandValue;
         }

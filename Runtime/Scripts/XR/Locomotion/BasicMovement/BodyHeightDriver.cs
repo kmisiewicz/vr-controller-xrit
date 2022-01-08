@@ -1,30 +1,28 @@
+using Unity.XR.CoreUtils;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 
 [RequireComponent(typeof(CapsuleCollider))]
 public class BodyHeightDriver : MonoBehaviour
 {
-    [SerializeField, Min(0f)]
-    float minHeight = 1f;
-    public float MinHeight => minHeight;
+    [SerializeField, Min(0f)] float _MinHeight = 1f;
+    public float MinHeight => _MinHeight;
 
-    [SerializeField, Min(0f)]
-    float maxHeight = 2f;
-    public float MaxHeight => maxHeight;
+    [SerializeField, Min(0f)] float _MaxHeight = 2f;
+    public float MaxHeight => _MaxHeight;
 
     [SerializeField, Range(0f, 1f), Tooltip("Determines how high above ground is the collider floating. Allows to climb stairs.")]
-    float floatHeight = 0.2f;
-    public float FloatHeight => floatHeight;
+    float _FloatHeight = 0.2f;
+    public float FloatHeight => _FloatHeight;
 
 
     CapsuleCollider _collider;
-    XRRig _rig;
+    XROrigin _origin;
 
 
     private void Awake()
     {
         _collider = GetComponent<CapsuleCollider>();
-        _rig = GetComponentInChildren<XRRig>();
+        _origin = GetComponentInChildren<XROrigin>();
     }
 
     private void FixedUpdate()
@@ -32,11 +30,11 @@ public class BodyHeightDriver : MonoBehaviour
         UpdateCollider();
     }
 
-    /// <summary>Updates capsule collider's height and center according to <see cref="XRRig.cameraInRigSpaceHeight"/>.</summary>
+    /// <summary>Updates capsule collider's height and center according to <see cref="XROrigin.CameraInOriginSpaceHeight"/>.</summary>
     private void UpdateCollider()
     {
         var center = _collider.center;
-        _collider.height = Mathf.Clamp(_rig.cameraInRigSpaceHeight, minHeight, maxHeight) - floatHeight;
-        _collider.center = new Vector3(center.x, _collider.height / 2 + floatHeight, center.z);
+        _collider.height = Mathf.Clamp(_origin.CameraInOriginSpaceHeight, _MinHeight, _MaxHeight) - _FloatHeight;
+        _collider.center = new Vector3(center.x, _collider.height / 2f + _FloatHeight, center.z);
     }
 }

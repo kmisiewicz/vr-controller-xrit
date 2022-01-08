@@ -1,4 +1,5 @@
 //using Chroma.UnityTools;
+using Chroma.Utility.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,74 +13,62 @@ namespace Chroma.XR.Locomotion
 
         bool showReferences = false;
 
+        const int INDENT_WIDTH = 15;
+        const int MIN_FIELD_WIDTH = 155;
+
 
         private void OnEnable()
         {
-            leftHandInput = serializedObject.FindProperty("leftHandInput");
-            rightHandInput = serializedObject.FindProperty("rightHandInput");
-            useBlink = serializedObject.FindProperty("useBlink");
-            fadeInTime = serializedObject.FindProperty("fadeInTime");
-            fadeOutTime = serializedObject.FindProperty("fadeOutTime");
-            fadeInBlock = serializedObject.FindProperty("fadeInBlockMovement");
-            fadeOutBlock = serializedObject.FindProperty("fadeOutBlockMovement");
+            leftHandInput = serializedObject.FindProperty("_LeftHandInput");
+            rightHandInput = serializedObject.FindProperty("_RightHandInput");
+            useBlink = serializedObject.FindProperty("_UseBlink");
+            fadeInTime = serializedObject.FindProperty("_FadeInTime");
+            fadeOutTime = serializedObject.FindProperty("_FadeOutTime");
+            fadeInBlock = serializedObject.FindProperty("_FadeInBlockMovement");
+            fadeOutBlock = serializedObject.FindProperty("_FadeOutBlockMovement");
 
             locomotionSystem = serializedObject.FindProperty("m_System");
-            fade = serializedObject.FindProperty("screenFade");
-            body = serializedObject.FindProperty("bodyRoot");
-            leftRay = serializedObject.FindProperty("leftRayToggler");
-            rightRay = serializedObject.FindProperty("rightRayToggler");
+            fade = serializedObject.FindProperty("_ScreenFade");
+            body = serializedObject.FindProperty("_BodyRoot");
+            leftRay = serializedObject.FindProperty("_LeftRayToggler");
+            rightRay = serializedObject.FindProperty("_RightRayToggler");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            //EditorExtensions.DrawChromaBar();
+            EditorFunctions.DrawScriptField(serializedObject);
 
             GUIStyle foldoutStyle = new GUIStyle(EditorStyles.foldout);
             foldoutStyle.fontStyle = FontStyle.Bold;
-                        
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Enable Input", GUILayout.Width(EditorGUIUtility.labelWidth));
-            EditorGUILayout.LabelField("Left Hand", GUILayout.Width(80));
-            EditorGUILayout.PropertyField(leftHandInput, GUIContent.none, GUILayout.Width(50));
-            EditorGUILayout.LabelField("Right Hand", GUILayout.Width(80));
-            EditorGUILayout.PropertyField(rightHandInput, GUIContent.none, GUILayout.Width(50));
-            EditorGUILayout.EndHorizontal();
+
+            Rect inputRect = EditorGUILayout.GetControlRect();
+            inputRect = EditorGUI.PrefixLabel(inputRect, new GUIContent("Enable Input"));
+            var labels = inputRect.width >= MIN_FIELD_WIDTH ? new[] { new GUIContent("Left Hand"), new GUIContent("Right Hand") } : 
+                new[] { new GUIContent("L"), new GUIContent("R") };
+            var properties = new[] { leftHandInput, rightHandInput };
+            EditorFunctions.DrawMultiplePropertyFieldsInLine(inputRect, labels, properties);
 
             EditorGUILayout.PropertyField(useBlink, new GUIContent("Use Blink"));
 
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Fade Time", GUILayout.Width(EditorGUIUtility.labelWidth));
-            EditorGUILayout.LabelField("In", GUILayout.Width(15));
-            EditorGUILayout.PropertyField(fadeInTime, GUIContent.none, GUILayout.Width(70));
-            GUILayout.Space(30);
-            EditorGUILayout.LabelField("Out", GUILayout.Width(25));
-            EditorGUILayout.PropertyField(fadeOutTime, GUIContent.none, GUILayout.Width(70));
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Block Movement on Fade", GUILayout.Width(EditorGUIUtility.labelWidth));
-            EditorGUILayout.LabelField("In", GUILayout.Width(15));
-            EditorGUILayout.PropertyField(fadeInBlock, GUIContent.none, GUILayout.Width(70));
-            GUILayout.Space(30);
-            EditorGUILayout.LabelField("Out", GUILayout.Width(25));
-            EditorGUILayout.PropertyField(fadeOutBlock, GUIContent.none, GUILayout.Width(70));
-            EditorGUILayout.EndHorizontal();
+            inputRect = EditorGUILayout.GetControlRect();
+            inputRect = EditorGUI.PrefixLabel(inputRect, new GUIContent("Fade Time"));
+            labels = new[] { new GUIContent("In"), new GUIContent("Out") };
+            properties = new[] { fadeInTime, fadeOutTime };
+            EditorFunctions.DrawMultiplePropertyFieldsInLine(inputRect, labels, properties);
 
-            //EditorGUILayout.Space(-EditorGUIUtility.standardVerticalSpacing);
+            inputRect = EditorGUILayout.GetControlRect();
+            inputRect = EditorGUI.PrefixLabel(inputRect, new GUIContent("Block Movement on Fade"));
+            properties = new[] { fadeInBlock, fadeOutBlock };
+            EditorFunctions.DrawMultiplePropertyFieldsInLine(inputRect, labels, properties);
+
             EditorGUILayout.Space();
             showReferences = EditorGUILayout.Foldout(showReferences, new GUIContent("References"), true, foldoutStyle);
             if (showReferences)
             {
                 EditorGUI.indentLevel++;
-
-                EditorGUILayout.PropertyField(locomotionSystem, new GUIContent("System"), true);
-                EditorGUILayout.PropertyField(body, new GUIContent("Body"), true);
-                EditorGUILayout.PropertyField(fade, new GUIContent("Screen Fade"), true);
-                EditorGUILayout.PropertyField(leftRay, new GUIContent("Left Ray Toggler"), true);
-                EditorGUILayout.PropertyField(rightRay, new GUIContent("Right Ray Toggler"), true);
-
+                EditorFunctions.DrawMultiplePropertyFields(new[] { locomotionSystem, body, fade, leftRay, rightRay });
                 EditorGUI.indentLevel--;
             }
 

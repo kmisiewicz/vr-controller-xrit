@@ -9,58 +9,59 @@ namespace Chroma.Rendering.ScreenEffects
     {
         #region Editor variables
         [SerializeField]
-        bool useVignette = false;
+        bool _UseVignette = false;
 
         [SerializeField, Range(0f, 1f), Tooltip("Target amount of vignetting on screen.")]
-        float vignetteIntensity = 0.75f;
+        float _VignetteIntensity = 0.75f;
 
         [SerializeField, Range(0f, 1f), Tooltip("Smoothness of vignette borders.")]
-        float vignetteSmoothness = 0.7f;
+        float _VignetteSmoothness = 0.7f;
 
         [SerializeField, Min(0f)]
-        float duration = 0.5f;
+        float _Duration = 0.5f;
 
         [SerializeField]
-        Volume volume = null;
+        Volume _Volume = null;
 
         [SerializeField]
-        Ease fadeInEase = Ease.Linear;
+        Ease _FadeInEase = Ease.Linear;
 
         [SerializeField]
-        Ease fadeOutEase = Ease.Linear;
+        Ease _FadeOutEase = Ease.Linear;
         #endregion
 
         Vignette _vignette = null;
+        const string DOTWEEN_ID = "moveVignette";
 
 
         private void Awake()
         {
-            if (volume.profile.TryGet(out Vignette vignette))
+            if (_Volume.profile.TryGet(out Vignette vignette))
                 this._vignette = vignette;
         }
 
         public void FadeIn()
         {
-            if (!useVignette || _vignette == null) return;
+            if (!_UseVignette || _vignette == null) return;
 
             // Kill previous fade and fade to vignetteIntensity in time relative to current vignette intensity
-            DOTween.Kill("moveVignette");
-            float dur = duration * ((vignetteIntensity - _vignette.intensity.value) / vignetteIntensity);
-            DOTween.To(() => _vignette.intensity.value, SetVignetteIntensity, vignetteIntensity, dur)
-                .SetId("moveVignette")
-                .SetEase(fadeInEase);
+            DOTween.Kill(DOTWEEN_ID);
+            float dur = _Duration * ((_VignetteIntensity - _vignette.intensity.value) / _VignetteIntensity);
+            DOTween.To(() => _vignette.intensity.value, SetVignetteIntensity, _VignetteIntensity, dur)
+                .SetId(DOTWEEN_ID)
+                .SetEase(_FadeInEase);
         }
 
         public void FadeOut()
         {
-            if (!useVignette || _vignette == null) return;
+            if (!_UseVignette || _vignette == null) return;
 
             // Kill previous fade and fade to clear in time relative to current vignette intensity
-            DOTween.Kill("moveVignette");
-            float dur = duration * (_vignette.intensity.value / vignetteIntensity);
+            DOTween.Kill(DOTWEEN_ID);
+            float dur = _Duration * (_vignette.intensity.value / _VignetteIntensity);
             DOTween.To(() => _vignette.intensity.value, SetVignetteIntensity, 0f, dur)
-                .SetId("moveVignette")
-                .SetEase(fadeOutEase);
+                .SetId(DOTWEEN_ID)
+                .SetEase(_FadeOutEase);
         }
 
         private void SetVignetteIntensity(float value) => _vignette.intensity.Override(value);
@@ -69,7 +70,7 @@ namespace Chroma.Rendering.ScreenEffects
         private void OnValidate()
         {
             if (_vignette)
-                _vignette.smoothness.Override(vignetteSmoothness);
+                _vignette.smoothness.Override(_VignetteSmoothness);
         }
 #endif
     }

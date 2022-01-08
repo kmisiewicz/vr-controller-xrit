@@ -9,27 +9,27 @@ namespace Chroma.XR.Locomotion
 {
     public class TeleportationProvider : UnityEngine.XR.Interaction.Toolkit.TeleportationProvider
     {
-        [SerializeField, OnValueChanged("UpdateLeftHandInput")] bool leftHandInput = true;
-        [SerializeField, OnValueChanged("UpdateRightHandInput")] bool rightHandInput = true;
+        [SerializeField, OnValueChanged("UpdateLeftHandInput")] bool _LeftHandInput = true;
+        [SerializeField, OnValueChanged("UpdateRightHandInput")] bool _RightHandInput = true;
 
-        [SerializeField] bool useBlink = true;
-        [SerializeField] bool fadeInBlockMovement = false;
-        [SerializeField] bool fadeOutBlockMovement = false;
+        [SerializeField] bool _UseBlink = true;
+        [SerializeField] bool _FadeInBlockMovement = false;
+        [SerializeField] bool _FadeOutBlockMovement = false;
 
         [SerializeField, Min(0f)]
         [Tooltip("Duration of the fade in (to black). If set to 0, the default value from ScreenFader will be used.")]
-        float fadeInTime = 0.2f;
+        float _FadeInTime = 0.2f;
 
         [SerializeField, Min(0f)]
         [Tooltip("Duration of the fade out (to clear). If set to 0, the default value from ScreenFader will be used.")]
-        float fadeOutTime = 0.2f;
+        float _FadeOutTime = 0.2f;
 
-        [SerializeField] ScreenFade screenFade = null;
+        [SerializeField] ScreenFade _ScreenFade = null;
 
-        [SerializeField] Transform bodyRoot = null;
+        [SerializeField] Transform _BodyRoot = null;
 
-        [SerializeField] TeleportationRayToggler leftRayToggler = null;
-        [SerializeField] TeleportationRayToggler rightRayToggler = null;
+        [SerializeField] TeleportationRayToggler _LeftRayToggler = null;
+        [SerializeField] TeleportationRayToggler _RightRayToggler = null;
 
 
         XRRayInteractor currentRay = null;
@@ -39,18 +39,18 @@ namespace Chroma.XR.Locomotion
         protected override void Awake()
         {
             base.Awake();
-            _playerRb = bodyRoot.GetComponent<Rigidbody>();
+            _playerRb = _BodyRoot.GetComponent<Rigidbody>();
         }
 
         private void Start()
         {
-            EnableLeftHandInput(leftHandInput);
-            EnableRightHandInput(rightHandInput);
+            EnableLeftHandInput(_LeftHandInput);
+            EnableRightHandInput(_RightHandInput);
         }
 
         public override bool QueueTeleportRequest(TeleportRequest teleportRequest)
         {
-            if (validRequest || system.xrRig == null || !this.enabled)
+            if (validRequest || system.xrOrigin == null || !this.enabled)
                 return false;
 
             base.QueueTeleportRequest(teleportRequest);
@@ -62,9 +62,9 @@ namespace Chroma.XR.Locomotion
 
         private IEnumerator TeleportSequence(TeleportRequest request)
         {
-            bool shouldBlink = useBlink;
+            bool shouldBlink = _UseBlink;
 
-            if (fadeInBlockMovement)
+            if (_FadeInBlockMovement)
             {
                 while (!BeginLocomotion())
                     yield return null;
@@ -74,18 +74,18 @@ namespace Chroma.XR.Locomotion
             // Fade to black
             if (shouldBlink)
             {
-                float fadeInDuration = screenFade.FadeIn(fadeInTime);
+                float fadeInDuration = _ScreenFade.FadeIn(_FadeInTime);
                 yield return new WaitForSeconds(fadeInDuration);
             }
 
-            if (!fadeInBlockMovement)
+            if (!_FadeInBlockMovement)
                 while (!BeginLocomotion()) 
                     yield return null;
             _playerRb.velocity = Vector3.zero;
 
             Teleport(request);
 
-            if (!fadeOutBlockMovement)
+            if (!_FadeOutBlockMovement)
             {
                 EndLocomotion();
                 validRequest = false;
@@ -94,11 +94,11 @@ namespace Chroma.XR.Locomotion
             // Fade to clear
             if (shouldBlink)
             {
-                float fadeOutDuration = screenFade.FadeOut(fadeOutTime);
+                float fadeOutDuration = _ScreenFade.FadeOut(_FadeOutTime);
                 yield return new WaitForSeconds(fadeOutDuration);
             }
 
-            if (fadeOutBlockMovement)
+            if (_FadeOutBlockMovement)
             {
                 EndLocomotion();
                 validRequest = false;
@@ -107,20 +107,20 @@ namespace Chroma.XR.Locomotion
 
         private void Teleport(TeleportRequest request)
         {
-            var xrRig = system.xrRig;
-            if (xrRig == null)
+            var xrOrigin = system.xrOrigin;
+            if (xrOrigin == null)
                 return;
 
             switch (currentRequest.matchOrientation)
             {
                 case MatchOrientation.WorldSpaceUp:
-                    xrRig.MatchRigUp(Vector3.up);
+                    xrOrigin.MatchOriginUp(Vector3.up);
                     break;
                 case MatchOrientation.TargetUp:
-                    xrRig.MatchRigUp(currentRequest.destinationRotation * Vector3.up);
+                    xrOrigin.MatchOriginUp(currentRequest.destinationRotation * Vector3.up);
                     break;
                 case MatchOrientation.TargetUpAndForward:
-                    xrRig.MatchRigUpCameraForward(currentRequest.destinationRotation * Vector3.up, currentRequest.destinationRotation * Vector3.forward);
+                    xrOrigin.MatchOriginUpCameraForward(currentRequest.destinationRotation * Vector3.up, currentRequest.destinationRotation * Vector3.forward);
                     break;
                 case MatchOrientation.None:
                     // Change nothing. Maintain current rig rotation.
@@ -130,11 +130,11 @@ namespace Chroma.XR.Locomotion
                     break;
             }
 
-            var heightAdjustment = xrRig.rig.transform.up * xrRig.cameraInRigSpaceHeight;
+            var heightAdjustment = xrOrigin.transform.up * xrOrigin.CameraInOriginSpaceHeight;
             var cameraDestination = currentRequest.destinationPosition + heightAdjustment;
 
-            bodyRoot.position = currentRequest.destinationPosition;
-            xrRig.MoveCameraToWorldLocation(cameraDestination);
+            _BodyRoot.position = currentRequest.destinationPosition;
+            xrOrigin.MoveCameraToWorldLocation(cameraDestination);
         }
 
         public bool RequestRayExclusivity(XRRayInteractor ray)
@@ -155,19 +155,19 @@ namespace Chroma.XR.Locomotion
             return true;
         }
 
-        private void UpdateLeftHandInput() => EnableLeftHandInput(leftHandInput);
+        private void UpdateLeftHandInput() => EnableLeftHandInput(_LeftHandInput);
 
-        public void EnableLeftHandInput(bool enable) => leftRayToggler.enabled = leftHandInput = enable;
+        public void EnableLeftHandInput(bool enable) => _LeftRayToggler.enabled = _LeftHandInput = enable;
 
-        private void UpdateRightHandInput() => EnableRightHandInput(rightHandInput);
+        private void UpdateRightHandInput() => EnableRightHandInput(_RightHandInput);
 
-        public void EnableRightHandInput(bool enable) => rightRayToggler.enabled = rightHandInput = enable;
+        public void EnableRightHandInput(bool enable) => _RightRayToggler.enabled = _RightHandInput = enable;
 
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (screenFade == null)
-                screenFade = FindObjectOfType<ScreenFade>();
+            if (_ScreenFade == null)
+                _ScreenFade = FindObjectOfType<ScreenFade>();
         }
 #endif
     }

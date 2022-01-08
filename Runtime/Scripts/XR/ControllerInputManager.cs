@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
-[AddComponentMenu("XR/Action Based Controller Input Manager")]
 public class ControllerInputManager : MonoBehaviour
 {
     [SerializeField, Tooltip("Return manually calculated controller velocity.")]

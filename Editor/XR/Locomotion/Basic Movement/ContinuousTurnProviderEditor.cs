@@ -1,4 +1,5 @@
 //using Chroma.UnityTools;
+using Chroma.Utility.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,32 +17,34 @@ namespace Chroma.XR.Locomotion
         bool showInput = false;
         bool showEvents = false;
 
+        const int INDENT_WIDTH = 15;
+        const int MIN_FIELD_WIDTH = 155;
+
 
         private void OnEnable()
         {
             turnSpeed = serializedObject.FindProperty("m_TurnSpeed");
-            useVignette = serializedObject.FindProperty("useVignette");
+            useVignette = serializedObject.FindProperty("_UseVignette");
 
             locomotionSystem = serializedObject.FindProperty("m_System");
-            vignette = serializedObject.FindProperty("vignette");
+            vignette = serializedObject.FindProperty("_Vignette");
 
-            leftHandInput = serializedObject.FindProperty("leftHandInput");
-            rightHandInput = serializedObject.FindProperty("rightHandInput");
+            leftHandInput = serializedObject.FindProperty("_LeftHandInput");
+            rightHandInput = serializedObject.FindProperty("_RightHandInput");
             inputLeft = serializedObject.FindProperty("m_LeftHandTurnAction");
             inputRight = serializedObject.FindProperty("m_RightHandTurnAction");
 
-            startTurnEvent = serializedObject.FindProperty("startedTurning");
-            stopTurnEvent = serializedObject.FindProperty("finishedTurning");
+            startTurnEvent = serializedObject.FindProperty("StartedTurning");
+            stopTurnEvent = serializedObject.FindProperty("FinishedTurning");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            //EditorExtensions.DrawChromaBar();
+            EditorFunctions.DrawScriptField(serializedObject);
 
-            EditorGUILayout.PropertyField(turnSpeed, new GUIContent("Turn Speed"), true);
-            EditorGUILayout.PropertyField(useVignette, new GUIContent("Use Vignette"), true);
+            EditorFunctions.DrawMultiplePropertyFields(new[] { turnSpeed, useVignette });
 
             GUIStyle foldoutStyle = new GUIStyle(EditorStyles.foldout);
             foldoutStyle.fontStyle = FontStyle.Bold;
@@ -51,10 +54,7 @@ namespace Chroma.XR.Locomotion
             if (showReferences)
             {
                 EditorGUI.indentLevel++;
-
-                EditorGUILayout.PropertyField(locomotionSystem, new GUIContent("System"), true);
-                EditorGUILayout.PropertyField(vignette, new GUIContent("Vignette"), true);
-
+                EditorFunctions.DrawMultiplePropertyFields(new[] { locomotionSystem, vignette });
                 EditorGUI.indentLevel--;
             }
 
@@ -64,16 +64,15 @@ namespace Chroma.XR.Locomotion
             {
                 EditorGUI.indentLevel++;
 
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Enable Input", GUILayout.Width(EditorGUIUtility.labelWidth));
-                EditorGUILayout.LabelField("Left Hand", GUILayout.Width(80));
-                EditorGUILayout.PropertyField(leftHandInput, GUIContent.none, GUILayout.Width(50));
-                EditorGUILayout.LabelField("Right Hand", GUILayout.Width(80));
-                EditorGUILayout.PropertyField(rightHandInput, GUIContent.none, GUILayout.Width(50));
-                EditorGUILayout.EndHorizontal();
+                Rect inputRect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
+                inputRect.x -= INDENT_WIDTH;
+                inputRect = EditorGUI.PrefixLabel(inputRect, new GUIContent("Enable Input"));
+                var labels = inputRect.width >= MIN_FIELD_WIDTH ? new[] { new GUIContent("Left Hand"), new GUIContent("Right Hand") } : 
+                    new[] { new GUIContent("L"), new GUIContent("R") };
+                var properties = new[] { leftHandInput, rightHandInput };
+                EditorFunctions.DrawMultiplePropertyFieldsInLine(inputRect, labels, properties);
 
-                EditorGUILayout.PropertyField(inputLeft, new GUIContent("Left Hand Turn Action"), true);
-                EditorGUILayout.PropertyField(inputRight, new GUIContent("Right Hand Turn Action"), true);
+                EditorFunctions.DrawMultiplePropertyFields(new[] { inputLeft, inputRight });
 
                 EditorGUI.indentLevel--;
             }
@@ -83,10 +82,7 @@ namespace Chroma.XR.Locomotion
             if (showEvents)
             {
                 EditorGUI.indentLevel++;
-
-                EditorGUILayout.PropertyField(startTurnEvent, new GUIContent("Started Turning"), true);
-                EditorGUILayout.PropertyField(stopTurnEvent, new GUIContent("Finished Turning"), true);
-
+                EditorFunctions.DrawMultiplePropertyFields(new[] { startTurnEvent, stopTurnEvent });
                 EditorGUI.indentLevel--;
             }
 

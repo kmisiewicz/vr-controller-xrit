@@ -10,7 +10,7 @@ using Chroma.Utility.Attributes;
 namespace Chroma.XR.Locomotion
 {
     /// <summary>Substitute class for <see cref="ActionBasedContinuousMoveProvider"/> for a setup
-    /// with <see cref="Rigidbody"/> + head collider. Uses a lot of code from mentioned class.</summary>
+    /// with <see cref="Rigidbody"/> + head collider.</summary>
     public class MovementProvider : LocomotionProvider
     {
         /// <summary>Sets which orientation the forward direction of continuous movement is relative to.</summary>
@@ -24,132 +24,133 @@ namespace Chroma.XR.Locomotion
             RightHand,
         }
 
-
-        [SerializeField, Tooltip("The speed, in units per second, to move forward.")]
-        float moveSpeed = 1f;
+        #region Editor fields
+        [SerializeField, Tooltip("Maximal movement speed, in units per second.")]
+        float _MoveSpeed = 1f;
         /// <summary>The speed, in units per second, to move forward.</summary>
         public float MoveSpeed
         {
-            get => moveSpeed;
-            set => moveSpeed = value;
+            get => _MoveSpeed;
+            set => _MoveSpeed = value;
         }
 
         [SerializeField, Tooltip("Controls acceleration speed.")]
-        float maxVelocityChange = 10.0f;
+        float _MaxVelocityChange = 10.0f;
         /// <summary>Controls acceleration speed.</summary>
         public float MaxVelocityChange
         {
-            get => maxVelocityChange;
-            set => maxVelocityChange = value;
+            get => _MaxVelocityChange;
+            set => _MaxVelocityChange = value;
         }
 
         [SerializeField, Tooltip("Controls whether to enable strafing (sideways movement).")]
-        bool enableStrafe = true;
+        bool _EnableStrafe = true;
         /// <summary>Controls whether to enable strafing (sideways movement).</summary>
         public bool EnableStrafe
         {
-            get => enableStrafe;
-            set => enableStrafe = value;
+            get => _EnableStrafe;
+            set => _EnableStrafe = value;
         }
 
         [SerializeField, Tooltip("Reference to Vignette Controller.")]
-        VignetteController vignette = null;
+        VignetteController _Vignette = null;
 
         [SerializeField, Tooltip("Controls whether to dim screen edges while moving (may help with motion sickness).")]
-        bool useVignette = true;
+        bool _UseVignette = true;
         /// <summary>Controls whether to dim screen edges while moving (may help with motion sickness).</summary>
         public bool UseVignette
         {
-            get => useVignette;
-            set => useVignette = value;
+            get => _UseVignette;
+            set => _UseVignette = value;
         }
 
-        [SerializeField]
-        MoveForwardSource forwardSource = MoveForwardSource.Head;
+        [SerializeField, Tooltip("Controls which transform to use as forward source.")]
+        MoveForwardSource _ForwardSource = MoveForwardSource.Head;
         /// <summary>Controls which transform to use as forward source.</summary>
         public MoveForwardSource ForwardSource
         {
-            get => forwardSource;
-            set => forwardSource = value;
+            get => _ForwardSource;
+            set => _ForwardSource = value;
         }
 
         [SerializeField]
-        EnumNamedArray<Transform> forwardSources = new EnumNamedArray<Transform>(typeof(MoveForwardSource));
+        EnumNamedArray<Transform> _ForwardSources = new EnumNamedArray<Transform>(typeof(MoveForwardSource));
 
         [SerializeField, OnValueChanged("UpdateLeftHandInput")] 
-        bool leftHandInput = true;
+        bool _LeftHandInput = true;
 
         [SerializeField, OnValueChanged("UpdateRightHandInput")] 
-        bool rightHandInput = true;
+        bool _RightHandInput = true;
 
         [SerializeField, Tooltip("The Input System Action that will be used to read Move data from the left controller." +
             " Must be a Value Vector2 Control.")]
-        InputActionProperty leftHandMoveAction;
+        InputActionProperty _LeftHandMoveAction;
         /// <summary>The Input System Action that will be used to read Move data from the left controller.
         /// Must be a <see cref="InputActionType.Value"/> <see cref="Vector2Control"/> Control.</summary>
         public InputActionProperty LeftHandMoveAction
         {
-            get => leftHandMoveAction;
-            set => SetInputActionProperty(ref leftHandMoveAction, value);
+            get => _LeftHandMoveAction;
+            set => SetInputActionProperty(ref _LeftHandMoveAction, value);
         }
 
         [SerializeField, Tooltip("The Input System Action that will be used to read Move data from the right controller." +
             " Must be a Value Vector2 Control.")]
-        InputActionProperty rightHandMoveAction;
+        InputActionProperty _RightHandMoveAction;
         /// <summary>The Input System Action that will be used to read Move data from the right controller.
         /// Must be a <see cref="InputActionType.Value"/> <see cref="Vector2Control"/> Control.</summary>
         public InputActionProperty RightHandMoveAction
         {
-            get => rightHandMoveAction;
-            set => SetInputActionProperty(ref rightHandMoveAction, value);
+            get => _RightHandMoveAction;
+            set => SetInputActionProperty(ref _RightHandMoveAction, value);
         }
 
         [SerializeField, Tooltip("Player's main Rigidbody.")]
-        Rigidbody body;
+        Rigidbody _Body;
 
-        [SerializeField, Tooltip("Require controller to be grounded to be able to move. Must set a reference to GroundedChecker.")]
-        bool requireGrounded = false;
+        [SerializeField, Tooltip("In air control multiplier")]
+        float _InAirMultiplier = 1f;
 
         [SerializeField, Tooltip("Ground check script.")]
-        GravityProvider gravityProvider = null;
+        GravityProvider _GravityProvider = null;
 
 
         /// <summary>This event will be called when player <see cref="Rigidbody"/> starts moving.</summary>
-        public UnityEvent startedMoving;
+        public UnityEvent StartedMoving;
         /// <summary>This event will be called when player <see cref="Rigidbody"/> stops moving.</summary>
-        public UnityEvent finishedMoving;
+        public UnityEvent FinishedMoving;
+        #endregion
 
+        #region Script fields
         public bool IsMoving { get; private set; } = false;
 
 
         bool _wasMoving = false;
         Vector2 _input = Vector2.zero;
+        #endregion
 
-
-        #region Methods
-
+        #region Unity methods
         private new void Awake()
         {
             base.Awake();
 
-            if (body == null)
-                body = GetComponentInParent<Rigidbody>();
-            body.freezeRotation = true;
+            if (_Body == null)
+                _Body = GetComponentInParent<Rigidbody>();
+            _Body.freezeRotation = true;
 
-            EnableLeftHandInput(leftHandInput);
-            EnableRightHandInput(rightHandInput);
+            EnableLeftHandInput(_LeftHandInput);
+            EnableRightHandInput(_RightHandInput);
         }
 
         protected void OnEnable()
         {
-            leftHandMoveAction.EnableDirectAction();
-            rightHandMoveAction.EnableDirectAction();
+            _LeftHandMoveAction.EnableDirectAction();
+            _RightHandMoveAction.EnableDirectAction();
         }
 
         protected void OnDisable()
         {
-            leftHandMoveAction.DisableDirectAction();
-            rightHandMoveAction.DisableDirectAction();
+            _LeftHandMoveAction.DisableDirectAction();
+            _RightHandMoveAction.DisableDirectAction();
         }
 
         private void Update()
@@ -159,28 +160,56 @@ namespace Chroma.XR.Locomotion
 
         private void FixedUpdate()
         {
-            var xrRig = system.xrRig;
-            if (xrRig == null)
+            var xrOrigin = system.xrOrigin;
+            if (xrOrigin == null)
                 return;
 
             var velocityChange = ComputeVelocityChange(_input, out Vector3 targetVelocity);
             UpdateIsMoving(targetVelocity);
             MoveRig(velocityChange);
         }
+        #endregion
 
-        private void MoveRig(Vector3 velocityChange)
+        #region Public methods
+        public void EnableLeftHandInput(bool enable)
+        {
+            if (_LeftHandMoveAction.action != null)
+            {
+                if (enable)
+                    _LeftHandMoveAction.action.Enable();
+                else
+                    _LeftHandMoveAction.action.Disable();
+                _LeftHandInput = enable;
+            }
+        }
+
+        public void EnableRightHandInput(bool enable)
+        {
+            if (_RightHandMoveAction.action != null)
+            {
+                if (enable)
+                    _RightHandMoveAction.action.Enable();
+                else
+                    _RightHandMoveAction.action.Disable();
+                _RightHandInput = enable;
+            }
+        }
+        #endregion
+
+        #region Private and protected methods
+        protected virtual void MoveRig(Vector3 velocityChange)
         {
             if (CanBeginLocomotion() && BeginLocomotion())
             {
-                body.AddForce(velocityChange, ForceMode.VelocityChange);
+                _Body.AddForce(velocityChange, ForceMode.VelocityChange);
                 EndLocomotion();
             }
         }
 
         protected virtual Vector2 ReadInput()
         {
-            var leftHandValue = leftHandInput ? leftHandMoveAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
-            var rightHandValue = rightHandInput ? rightHandMoveAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
+            var leftHandValue = _LeftHandInput ? _LeftHandMoveAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
+            var rightHandValue = _RightHandInput ? _RightHandMoveAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
             return leftHandValue + rightHandValue;
         }
 
@@ -192,25 +221,22 @@ namespace Chroma.XR.Locomotion
         {
             targetVelocity = Vector3.zero;
 
-            //if (input == Vector2.zero)
-            //    return Vector3.zero;
-
-            var xrRig = system.xrRig;
-            if (xrRig == null)
+            var xrOrigin = system.xrOrigin;
+            if (xrOrigin == null)
                 return Vector3.zero;
 
             // Clamps the magnitude of the input direction [-1, 1] to prevent faster speed when moving diagonally,
             // while still allowing for analog input to move slower (which would be lost if simply normalizing).
-            var inputMove = Vector3.ClampMagnitude(new Vector3(enableStrafe ? input.x : 0f, 0f, input.y), 1f);
+            var inputMove = Vector3.ClampMagnitude(new Vector3(_EnableStrafe ? input.x : 0f, 0f, input.y), 1f);
 
-            var rigTransform = xrRig.rig.transform;
-            var rigUp = rigTransform.up;
+            var originTransform = xrOrigin.transform;
+            var originUp = originTransform.up;
 
             // Determine frame of reference for what the input direction is relative to
-            var forwardSourceTransform = forwardSources[forwardSource] == null ?
-                xrRig.cameraGameObject.transform : forwardSources[forwardSource];
+            var forwardSourceTransform = _ForwardSources[_ForwardSource] == null ?
+                xrOrigin.Camera.transform : _ForwardSources[_ForwardSource];
             var inputForwardInWorldSpace = forwardSourceTransform.forward;
-            if (Mathf.Approximately(Mathf.Abs(Vector3.Dot(inputForwardInWorldSpace, rigUp)), 1f))
+            if (Mathf.Approximately(Mathf.Abs(Vector3.Dot(inputForwardInWorldSpace, originUp)), 1f))
             {
                 // When the input forward direction is parallel with the rig normal,
                 // it will probably feel better for the player to move along the same direction
@@ -220,13 +246,13 @@ namespace Chroma.XR.Locomotion
                 inputForwardInWorldSpace = -forwardSourceTransform.up;
             }
 
-            var inputForwardProjectedInWorldSpace = Vector3.ProjectOnPlane(inputForwardInWorldSpace, rigUp);
-            var forwardRotation = Quaternion.FromToRotation(rigTransform.forward, inputForwardProjectedInWorldSpace);
+            var inputForwardProjectedInWorldSpace = Vector3.ProjectOnPlane(inputForwardInWorldSpace, originUp);
+            var forwardRotation = Quaternion.FromToRotation(originTransform.forward, inputForwardProjectedInWorldSpace);
 
-            var velocityInRigSpace = forwardRotation * inputMove * moveSpeed;
-            targetVelocity = rigTransform.TransformDirection(velocityInRigSpace);
+            var velocityInOriginSpace = forwardRotation * inputMove * _MoveSpeed;
+            targetVelocity = originTransform.TransformDirection(velocityInOriginSpace);
 
-            Vector3 velocityChange = (targetVelocity - body.velocity);
+            Vector3 velocityChange = (targetVelocity - _Body.velocity);
             velocityChange = Vector3.ProjectOnPlane(velocityChange, transform.up);
 
             return velocityChange;
@@ -239,50 +265,24 @@ namespace Chroma.XR.Locomotion
             {
                 if (IsMoving)
                 {
-                    if (useVignette && vignette)
-                        vignette.FadeIn();
-                    startedMoving?.Invoke();
+                    if (_UseVignette && _Vignette)
+                        _Vignette.FadeIn();
+                    StartedMoving?.Invoke();
                 }
                 else
                 {
-                    if (useVignette && vignette)
-                        vignette.FadeOut();
-                    finishedMoving?.Invoke();
+                    if (_UseVignette && _Vignette)
+                        _Vignette.FadeOut();
+                    FinishedMoving?.Invoke();
                 }
             }
             _wasMoving = IsMoving;
         }
 
-        private void UpdateLeftHandInput() => EnableLeftHandInput(leftHandInput);
-
-        public void EnableLeftHandInput(bool enable)
-        {
-            if (leftHandMoveAction.action != null)
-            {
-                if (enable)
-                    leftHandMoveAction.action.Enable();
-                else
-                    leftHandMoveAction.action.Disable();
-
-                leftHandInput = enable;
-            }
-        }
-
-        private void UpdateRightHandInput() => EnableRightHandInput(rightHandInput);
-
-        public void EnableRightHandInput(bool enable)
-        {
-            if (rightHandMoveAction.action != null)
-            {
-                if (enable)
-                    rightHandMoveAction.action.Enable();
-                else
-                    rightHandMoveAction.action.Disable();
-
-                rightHandInput = enable;
-            }
-        }
-
+        private void UpdateLeftHandInput() => EnableLeftHandInput(_LeftHandInput);
+        
+        private void UpdateRightHandInput() => EnableRightHandInput(_RightHandInput);
+        
         protected void SetInputActionProperty(ref InputActionProperty property, InputActionProperty value)
         {
             if (Application.isPlaying)
@@ -293,7 +293,6 @@ namespace Chroma.XR.Locomotion
             if (Application.isPlaying && isActiveAndEnabled)
                 property.EnableDirectAction();
         }
-
         #endregion
     }
 }

@@ -8,38 +8,40 @@ namespace Chroma.XR.Locomotion
     /// <summary>Custom gravity provider for Rigidbody player controller.</summary>
     public class GravityProvider : LocomotionProvider
     {
+        #region Editor fields
         [SerializeField, Tooltip("Enable gravity.")]
-        bool useGravity = true;
+        bool _UseGravity = true;
         /// <summary>Enable gravity.</summary>
         public bool UseGravity
         {
-            get => useGravity;
-            set => useGravity = value;
+            get => _UseGravity;
+            set => _UseGravity = value;
         }
 
         [SerializeField, Tooltip("Gravity acceleration in world_units/s^2.")]
-        float gravity = 9.81f;
+        float _Gravity = 9.81f;
         /// <summary>Gravity acceleration in world_units/s^2 (local).</summary>
         public float Gravity
         {
-            get => gravity;
-            set => gravity = value;
+            get => _Gravity;
+            set => _Gravity = value;
         }
 
-        [SerializeField, Tooltip("How steep can the slope be until gravity pulls player down.")]
-        float slopeLimit = 50f;
-        public float SlopeLimit => slopeLimit;
+        [SerializeField, Tooltip("How steep in degrees can the slope be until gravity pulls player down.")]
+        float _SlopeLimit = 50f;
+        public float SlopeLimit => _SlopeLimit;
 
-        [SerializeField, Tooltip("Gravity applied on slopes that exceed 'slopeLimit'.")]
-        float slopeGravity = 5f;
-        /// <summary>Gravity applied on slopes that exceed <see cref="slopeLimit"/>.</summary>
+        [SerializeField, Tooltip("Gravity applied on slopes that exceed 'slopeLimit' (works different than regular gravity).")]
+        float _SlopeGravity = 5f;
+        /// <summary>Gravity applied on slopes that exceed <see cref="_SlopeLimit"/>  (works different than regular gravity).</summary>
         public float SlopeGravity
         {
-            get => slopeGravity;
-            set => slopeGravity = value;
+            get => _SlopeGravity;
+            set => _SlopeGravity = value;
         }
+        #endregion
 
-
+        #region Properties
         public bool IsGrounded { get; private set; } = false;
 
         public bool IsSliding { get; private set; } = false;
@@ -49,16 +51,19 @@ namespace Chroma.XR.Locomotion
         public float GroundDistance { get; private set; } = Mathf.Infinity;
 
         public Vector3 GroundNormal { get; private set; } = Vector3.positiveInfinity;
+        #endregion
 
-
+        #region Private fields
         CapsuleCollider _collider;
         Rigidbody _rb;
-        int _currentLayer;
         LayerMask _groundLayerMask;
         Vector3 _rayOrigin = Vector3.zero;
+        int _currentLayer;
         bool _wasGrounded = false;
+        float _slidingSpeed = 0;
+        #endregion
 
-
+        #region Unity methods
         protected override void Awake()
         {
             base.Awake();
@@ -75,7 +80,9 @@ namespace Chroma.XR.Locomotion
             CheckIfGrounded();
             HandleGravity();
         }
+        #endregion
 
+        #region Private methods
         /// <summary>Checks whether the character is on the ground and updates <see cref="IsGrounded"/>.</summary>
         private void CheckIfGrounded()
         {
@@ -103,13 +110,13 @@ namespace Chroma.XR.Locomotion
                 GroundPoint = hit.point;
                 GroundDistance = hit.distance;
                 GroundNormal = hit.normal;
-                IsSliding = Vector3.Angle(GroundNormal, transform.up) > slopeLimit;
+                IsSliding = Vector3.Angle(GroundNormal, transform.up) > _SlopeLimit;
             }
         }
 
         private void HandleGravity()
         {
-            if (!useGravity)
+            if (!_UseGravity)
                 return;
 
             if (IsGrounded)
@@ -124,7 +131,7 @@ namespace Chroma.XR.Locomotion
             {
                 if (BeginLocomotion())
                 {
-                    _rb.AddForce(-transform.up * gravity, ForceMode.Acceleration);
+                    _rb.AddForce(-transform.up * _Gravity, ForceMode.Acceleration);
                     EndLocomotion();
                 }
             }
@@ -138,9 +145,21 @@ namespace Chroma.XR.Locomotion
         private void AdjustPositionToGround()
         {
             Vector3 targetPosition = Vector3.Lerp(_rb.position, GroundPoint, 20 * Time.deltaTime);
+            if (IsSliding)
+            {
+                _slidingSpeed += Time.deltaTime * _SlopeGravity;
+                Vector3 slidingDirection = Vector3.ProjectOnPlane(-transform.up, GroundNormal).normalized;
+                targetPosition += slidingDirection * _slidingSpeed;
+            }
+            else
+            {
+                _slidingSpeed = 0;
+            }
             _rb.MovePosition(targetPosition);
         }
+        #endregion
 
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             if (IsGrounded)
@@ -154,4 +173,5 @@ namespace Chroma.XR.Locomotion
             }
         }
     }
+#endif
 }

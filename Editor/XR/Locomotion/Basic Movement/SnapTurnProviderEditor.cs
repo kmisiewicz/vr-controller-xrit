@@ -1,4 +1,5 @@
 //using Chroma.UnityTools;
+using Chroma.Utility.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,6 +18,9 @@ namespace Chroma.XR.Locomotion
         bool showInput = false;
         bool showReferences = false;
 
+        const int INDENT_WIDTH = 15;
+        const int MIN_FIELD_WIDTH = 155;
+
 
         private void OnEnable()
         {
@@ -24,20 +28,20 @@ namespace Chroma.XR.Locomotion
             debounceTime = serializedObject.FindProperty("m_DebounceTime");
             turnLR = serializedObject.FindProperty("m_EnableTurnLeftRight");
             turnAround = serializedObject.FindProperty("m_EnableTurnAround");
-            blinkLR = serializedObject.FindProperty("useBlinkLeftRight");
-            blink180 = serializedObject.FindProperty("useBlinkTurnAround");
-            blinkLRInBlock = serializedObject.FindProperty("leftRightFadeInBlockMovement");
-            blinkLROutBlock = serializedObject.FindProperty("leftRightFadeOutBlockMovement");
-            blink180InBlock = serializedObject.FindProperty("turnAroundFadeInBlockMovement");
-            blink180OutBlock = serializedObject.FindProperty("turnAroundFadeOutBlockMovement");
-            fadeInTime = serializedObject.FindProperty("fadeInTime");
-            fadeOutTime = serializedObject.FindProperty("fadeOutTime");
+            blinkLR = serializedObject.FindProperty("_UseBlinkLeftRight");
+            blink180 = serializedObject.FindProperty("_UseBlinkTurnAround");
+            blinkLRInBlock = serializedObject.FindProperty("_LeftRightFadeInBlockMovement");
+            blinkLROutBlock = serializedObject.FindProperty("_LeftRightFadeOutBlockMovement");
+            blink180InBlock = serializedObject.FindProperty("_TurnAroundFadeInBlockMovement");
+            blink180OutBlock = serializedObject.FindProperty("_TurnAroundFadeOutBlockMovement");
+            fadeInTime = serializedObject.FindProperty("_FadeInTime");
+            fadeOutTime = serializedObject.FindProperty("_FadeOutTime");
 
             locomotionSystem = serializedObject.FindProperty("m_System");
-            fade = serializedObject.FindProperty("screenFade");
+            fade = serializedObject.FindProperty("_ScreenFade");
 
-            leftHandInput = serializedObject.FindProperty("leftHandInput");
-            rightHandInput = serializedObject.FindProperty("rightHandInput");
+            leftHandInput = serializedObject.FindProperty("_LeftHandInput");
+            rightHandInput = serializedObject.FindProperty("_RightHandInput");
             inputLeft = serializedObject.FindProperty("m_LeftHandSnapTurnAction");
             inputRight = serializedObject.FindProperty("m_RightHandSnapTurnAction");
         }
@@ -46,12 +50,9 @@ namespace Chroma.XR.Locomotion
         {
             serializedObject.Update();
 
-            //EditorExtensions.DrawChromaBar();
+            EditorFunctions.DrawScriptField(serializedObject);
 
-            EditorGUILayout.PropertyField(turnLR, new GUIContent("Enable Left & Right Turn"));
-            EditorGUILayout.PropertyField(turnAround, new GUIContent("Enable Turn Around"));
-            EditorGUILayout.PropertyField(turnAmount, new GUIContent("Turn Amount"));
-            EditorGUILayout.PropertyField(debounceTime, new GUIContent("Debounce Time"));
+            EditorFunctions.DrawMultiplePropertyFields(new[] { turnLR, turnAround, turnAmount, debounceTime });
 
             GUIStyle foldoutStyle = new GUIStyle(EditorStyles.foldout);
             foldoutStyle.fontStyle = FontStyle.Bold;
@@ -65,45 +66,25 @@ namespace Chroma.XR.Locomotion
             {
                 EditorGUI.indentLevel++;
 
-                EditorGUILayout.PropertyField(blinkLR, new GUIContent("Blink On Left & Right Turn"));
-                EditorGUILayout.PropertyField(blink180, new GUIContent("Blink On Turn Around"));
-                EditorGUILayout.PropertyField(fadeInTime, new GUIContent("Fade In Time"));
-                EditorGUILayout.PropertyField(fadeOutTime, new GUIContent("Fade Out Time"));
+                EditorFunctions.DrawMultiplePropertyFields(new[] { blinkLR, blink180, fadeInTime, fadeOutTime },
+                    new[] { new GUIContent("Blink On Left & Right Turn", blinkLR.tooltip), new GUIContent("Blink On Turn Around", blink180.tooltip),
+                    new GUIContent("Fade In Time", fadeInTime.tooltip), new GUIContent("Fade Out Time", fadeOutTime.tooltip) });
 
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Block Movement On Fade", EditorStyles.boldLabel);
 
-                Rect r = EditorGUILayout.GetControlRect(GUILayout.Height(EditorGUIUtility.singleLineHeight * 2));
+                Rect inputRect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
+                inputRect.x -= INDENT_WIDTH;
+                inputRect = EditorGUI.PrefixLabel(inputRect, new GUIContent("Left & Right Turn"));
+                var labels = new[] { new GUIContent("In"), new GUIContent("Out") };
+                var properties = new[] { blinkLRInBlock, blinkLROutBlock };
+                EditorFunctions.DrawMultiplePropertyFieldsInLine(inputRect, labels, properties);
 
-                float col = r.width /= 3;
-                r.width = col;
-                r.height = EditorGUIUtility.singleLineHeight;
-                EditorGUI.LabelField(r, "Left & Right Turn");
-                r.y += EditorGUIUtility.singleLineHeight;
-                EditorGUI.LabelField(r, "Turn Around");
-
-                r.x += col;
-                r.y -= EditorGUIUtility.singleLineHeight;
-                r.width /= 2;
-                EditorGUI.LabelField(r, "In", rightLabelStyle);
-                r.x += r.width;
-                EditorGUI.PropertyField(r, blinkLRInBlock, GUIContent.none);
-                r.x -= r.width;
-                r.y += EditorGUIUtility.singleLineHeight;
-                EditorGUI.LabelField(r, "In", rightLabelStyle);
-                r.x += r.width;
-                EditorGUI.PropertyField(r, blink180InBlock, GUIContent.none);
-
-                r.x += r.width;
-                r.y -= EditorGUIUtility.singleLineHeight;
-                EditorGUI.LabelField(r, "Out", rightLabelStyle);
-                r.x += r.width;
-                EditorGUI.PropertyField(r, blinkLROutBlock, GUIContent.none);
-                r.x -= r.width;
-                r.y += EditorGUIUtility.singleLineHeight;
-                EditorGUI.LabelField(r, "Out", rightLabelStyle);
-                r.x += r.width;
-                EditorGUI.PropertyField(r, blink180OutBlock, GUIContent.none);
+                inputRect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
+                inputRect.x -= INDENT_WIDTH;
+                inputRect = EditorGUI.PrefixLabel(inputRect, new GUIContent("Turn Around"));
+                properties = new[] { blink180InBlock, blink180OutBlock };
+                EditorFunctions.DrawMultiplePropertyFieldsInLine(inputRect, labels, properties);
 
                 EditorGUI.indentLevel--;
             }
@@ -113,10 +94,7 @@ namespace Chroma.XR.Locomotion
             if (showReferences)
             {
                 EditorGUI.indentLevel++;
-
-                EditorGUILayout.PropertyField(locomotionSystem, new GUIContent("System"), true);
-                EditorGUILayout.PropertyField(fade, new GUIContent("Screen Fade"), true);
-
+                EditorFunctions.DrawMultiplePropertyFields(new[] { locomotionSystem, fade });
                 EditorGUI.indentLevel--;
             }
 
@@ -126,16 +104,14 @@ namespace Chroma.XR.Locomotion
             {
                 EditorGUI.indentLevel++;
 
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Enable Input", GUILayout.Width(EditorGUIUtility.labelWidth));
-                EditorGUILayout.LabelField("Left Hand", GUILayout.Width(80));
-                EditorGUILayout.PropertyField(leftHandInput, GUIContent.none, GUILayout.Width(50));
-                EditorGUILayout.LabelField("Right Hand", GUILayout.Width(80));
-                EditorGUILayout.PropertyField(rightHandInput, GUIContent.none, GUILayout.Width(50));
-                EditorGUILayout.EndHorizontal();
+                Rect inputRect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
+                inputRect.x -= INDENT_WIDTH;
+                inputRect = EditorGUI.PrefixLabel(inputRect, new GUIContent("Enable Input"));
+                var labels = inputRect.width >= MIN_FIELD_WIDTH ? new[] { new GUIContent("Left Hand"), new GUIContent("Right Hand") } : new[] { new GUIContent("L"), new GUIContent("R") };
+                var properties = new[] { leftHandInput, rightHandInput };
+                EditorFunctions.DrawMultiplePropertyFieldsInLine(inputRect, labels, properties);
 
-                EditorGUILayout.PropertyField(inputLeft, new GUIContent("Left Hand Snap Turn Action"), true);
-                EditorGUILayout.PropertyField(inputRight, new GUIContent("Right Hand Snap Turn Action"), true);
+                EditorFunctions.DrawMultiplePropertyFields(new[] { inputLeft, inputRight });
 
                 EditorGUI.indentLevel--;
             }

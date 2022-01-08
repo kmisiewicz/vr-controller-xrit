@@ -8,7 +8,7 @@ namespace Chroma.XR.Locomotion
         [SerializeField]
         [Tooltip("The climb provider that this climb interactable will communicate climb requests to." +
                 " If no climb provider is configured, will attempt to find a climb provider during Awake.")]
-        ClimbingProvider climbingProvider;
+        ClimbingProvider _ClimbingProvider;
 
         /// <summary>
         /// The climb provider that this climb interactable will communicate teleport requests to.
@@ -16,26 +16,26 @@ namespace Chroma.XR.Locomotion
         /// </summary>
         public ClimbingProvider ClimbingProvider
         {
-            get => climbingProvider;
-            set => climbingProvider = value;
+            get => _ClimbingProvider;
+            set => _ClimbingProvider = value;
         }
 
         protected override void Awake()
         {
             base.Awake();
-            if (climbingProvider == null)
-                climbingProvider = FindObjectOfType<ClimbingProvider>();
+            if (_ClimbingProvider == null)
+                _ClimbingProvider = FindObjectOfType<ClimbingProvider>();
         }
 
         protected override void OnSelectEntered(SelectEnterEventArgs args)
         {
             base.OnSelectEntered(args);
-            climbingProvider.BeginClimbing(args);
+            _ClimbingProvider.BeginClimbing(args);
         }
 
         protected override void OnSelectExited(SelectExitEventArgs args)
         {
-            climbingProvider.EndClimbing(args);
+            _ClimbingProvider.EndClimbing(args);
             base.OnSelectExited(args);
         }
     }

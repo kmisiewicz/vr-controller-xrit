@@ -14,6 +14,8 @@ namespace Chroma.XR.Locomotion
             /// <summary>Allows the head to move from body to <see cref="neckLength"/>.</summary>
             AllowLeaning,
         }
+
+        [ChromaBar]
         [SerializeField, Tooltip("Controls how the body collider will follow player's head.")]
         HeadFollowMethod colliderPositionUpdateMethod;
 
@@ -28,7 +30,7 @@ namespace Chroma.XR.Locomotion
         {
             base.Awake();
             _body = GetComponent<Rigidbody>();
-            _head = system.xrRig.cameraGameObject.transform;
+            _head = system.xrOrigin.Camera.gameObject.transform;
         }
 
         private void FixedUpdate()
@@ -63,7 +65,7 @@ namespace Chroma.XR.Locomotion
                 if (CanBeginLocomotion() && BeginLocomotion())
                 {
                     _body.MovePosition(_body.position + motion);
-                    system.xrRig.transform.position -= motion;
+                    system.xrOrigin.transform.position -= motion;
                     EndLocomotion();
                 }
             }

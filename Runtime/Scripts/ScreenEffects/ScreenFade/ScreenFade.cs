@@ -8,11 +8,11 @@ namespace Chroma.Rendering.ScreenEffects
     {
         public ForwardRendererData rendererData = null;
 
-        [SerializeField] Ease fadeInEase = Ease.Linear;
-        [SerializeField] Ease fadeOutEase = Ease.Linear;
+        [SerializeField] Ease _FadeInEase = Ease.Linear;
+        [SerializeField] Ease _FadeOutEase = Ease.Linear;
 
-        [SerializeField, Min(0f)] float defaultFadeTime = 0.5f;
-        public float DefaultFadeTime => defaultFadeTime;
+        [SerializeField, Min(0f)] float _DefaultFadeTime = 0.5f;
+        public float DefaultFadeTime => _DefaultFadeTime;
 
         Material _fadeMaterial = null;
 
@@ -41,16 +41,16 @@ namespace Chroma.Rendering.ScreenEffects
         public float FadeIn(float fadeTime = 0f)
         {
             // Fade to black
-            float duration = fadeTime > 0f ? fadeTime : defaultFadeTime;
-            _fadeMaterial.DOFloat(1f, "_Alpha", duration).SetEase(fadeInEase);
+            float duration = fadeTime > 0f ? fadeTime : _DefaultFadeTime;
+            _fadeMaterial.DOFloat(1f, "_Alpha", duration).SetEase(_FadeInEase);
             return duration;
         }
 
         public float FadeOut(float fadeTime = 0f)
         {
             // Fade to clear
-            float duration = fadeTime > 0f ? fadeTime : defaultFadeTime;
-            _fadeMaterial.DOFloat(0f, "_Alpha", duration).SetEase(fadeOutEase);
+            float duration = fadeTime > 0f ? fadeTime : _DefaultFadeTime;
+            _fadeMaterial.DOFloat(0f, "_Alpha", duration).SetEase(_FadeOutEase);
             return duration;
         }
     }

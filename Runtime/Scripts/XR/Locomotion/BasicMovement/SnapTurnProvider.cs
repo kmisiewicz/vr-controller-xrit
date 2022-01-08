@@ -9,44 +9,39 @@ namespace Chroma.XR.Locomotion
 {
     public class SnapTurnProvider : ActionBasedSnapTurnProvider
     {
-        [SerializeField] bool leftHandInput = true;
-        [SerializeField] bool rightHandInput = true;
+        #region Editor fields
+        [SerializeField] bool _LeftHandInput = true;
+        [SerializeField] bool _RightHandInput = true;
 
-        [SerializeField] bool useBlinkLeftRight = true;
-        [SerializeField] bool useBlinkTurnAround = true;
+        [SerializeField] bool _UseBlinkLeftRight = true;
+        [SerializeField] bool _UseBlinkTurnAround = true;
 
-        [SerializeField, Min(0f)] float fadeInTime = 0.2f;
-        [SerializeField, Min(0f)] float fadeOutTime = 0.2f;
-        [SerializeField] ScreenFade screenFade = null;
+        [SerializeField, Min(0f)] float _FadeInTime = 0.2f;
+        [SerializeField, Min(0f)] float _FadeOutTime = 0.2f;
+        [SerializeField] ScreenFade _ScreenFade = null;
 
-        [SerializeField] bool leftRightFadeInBlockMovement = false;
-        [SerializeField] bool leftRightFadeOutBlockMovement = false;
-        [SerializeField] bool turnAroundFadeInBlockMovement = false;
-        [SerializeField] bool turnAroundFadeOutBlockMovement = false;
+        [SerializeField] bool _LeftRightFadeInBlockMovement = false;
+        [SerializeField] bool _LeftRightFadeOutBlockMovement = false;
+        [SerializeField] bool _TurnAroundFadeInBlockMovement = false;
+        [SerializeField] bool _TurnAroundFadeOutBlockMovement = false;
+        #endregion
 
-
+        #region Private fields
         bool _useBlink = false;
         bool _fadeInBlockMovement = false;
         bool _fadeOutBlockMovement = false;
         float _currentTurnAmount = 0f;
         float _timeStarted = 0f;
+        #endregion
 
-
-        private new void Awake()
-        {
-            base.Awake();
-            leftHandSnapTurnAction.action.Enable();
-            rightHandSnapTurnAction.action.Enable();
-        }
-
-        protected void Start()
-        {
-            if (!screenFade)
-            {
-                useBlinkLeftRight = false;
-                useBlinkTurnAround = false;
-            }
-        }
+        #region Unity methods
+        // TODO: Should work without this
+        //private new void Awake()
+        //{
+        //    base.Awake();
+        //    leftHandSnapTurnAction.action.Enable();
+        //    rightHandSnapTurnAction.action.Enable();
+        //}
 
         protected new void Update()
         {
@@ -62,7 +57,15 @@ namespace Chroma.XR.Locomotion
             if (Mathf.Abs(amount) > 0f)
                 StartTurn(amount, input);
         }
+        #endregion
 
+        #region Public methods
+        public void EnableLeftHandInput(bool enable) => _LeftHandInput = enable;
+
+        public void EnableRightHandInput(bool enable) => _RightHandInput = enable;
+        #endregion
+
+        #region Private and protected methods
         private IEnumerator TurnSequence()
         {
             if (_fadeInBlockMovement)
@@ -72,7 +75,7 @@ namespace Chroma.XR.Locomotion
             // Fade to black
             if (_useBlink)
             {
-                float fadeInDuration = fadeInTime > 0f ? screenFade.FadeIn(fadeInTime) : screenFade.FadeIn();
+                float fadeInDuration = _ScreenFade.FadeIn(_FadeInTime);
                 yield return new WaitForSeconds(fadeInDuration);
             }
 
@@ -88,7 +91,7 @@ namespace Chroma.XR.Locomotion
             // Fade to clear
             if (_useBlink)
             {
-                float fadeOutDuration = fadeOutTime > 0f ? screenFade.FadeOut(fadeOutTime) : screenFade.FadeOut();
+                float fadeOutDuration = _ScreenFade.FadeOut(_FadeOutTime);
                 yield return new WaitForSeconds(fadeOutDuration);
             }
 
@@ -98,11 +101,11 @@ namespace Chroma.XR.Locomotion
 
         private void Turn()
         {
-            var xrRig = system.xrRig;
-            if (xrRig == null) 
+            var xrOrigin = system.xrOrigin;
+            if (xrOrigin == null) 
                 return;
 
-            xrRig.RotateAroundCameraUsingRigUp(_currentTurnAmount);
+            xrOrigin.RotateAroundCameraUsingOriginUp(_currentTurnAmount);
 
             _currentTurnAmount = 0f;
         }
@@ -113,7 +116,7 @@ namespace Chroma.XR.Locomotion
         /// <returns>Returns <see langword="true"/> if screen should fade during turn.</returns>
         protected bool ShouldBlink(Vector2 input)
         {
-            if (input == Vector2.zero)
+            if (input == Vector2.zero || _ScreenFade == null)
                 return false;
 
             var cardinal = CardinalUtility.GetNearestCardinal(input);
@@ -122,25 +125,25 @@ namespace Chroma.XR.Locomotion
                 case Cardinal.North:
                     break;
                 case Cardinal.South:
-                    if (turnAroundFadeInBlockMovement) _fadeInBlockMovement = true;
+                    if (_TurnAroundFadeInBlockMovement) _fadeInBlockMovement = true;
                     else _fadeInBlockMovement = false;
-                    if (turnAroundFadeOutBlockMovement) _fadeOutBlockMovement = true;
+                    if (_TurnAroundFadeOutBlockMovement) _fadeOutBlockMovement = true;
                     else _fadeOutBlockMovement = false;
-                    if (useBlinkTurnAround) return true;
+                    if (_UseBlinkTurnAround) return true;
                     break;
                 case Cardinal.East:
-                    if (leftRightFadeInBlockMovement) _fadeInBlockMovement = true;
+                    if (_LeftRightFadeInBlockMovement) _fadeInBlockMovement = true;
                     else _fadeInBlockMovement = false;
-                    if (leftRightFadeOutBlockMovement) _fadeOutBlockMovement = true;
+                    if (_LeftRightFadeOutBlockMovement) _fadeOutBlockMovement = true;
                     else _fadeOutBlockMovement = false;
-                    if (useBlinkLeftRight) return true;
+                    if (_UseBlinkLeftRight) return true;
                     break;
                 case Cardinal.West:
-                    if (leftRightFadeInBlockMovement) _fadeInBlockMovement = true;
+                    if (_LeftRightFadeInBlockMovement) _fadeInBlockMovement = true;
                     else _fadeInBlockMovement = false;
-                    if (leftRightFadeOutBlockMovement) _fadeOutBlockMovement = true;
+                    if (_LeftRightFadeOutBlockMovement) _fadeOutBlockMovement = true;
                     else _fadeOutBlockMovement = false;
-                    if (useBlinkLeftRight) return true;
+                    if (_UseBlinkLeftRight) return true;
                     break;
                 default:
                     Assert.IsTrue(false, $"Unhandled {nameof(Cardinal)}={cardinal}");
@@ -168,26 +171,22 @@ namespace Chroma.XR.Locomotion
 
         protected override Vector2 ReadInput()
         {
-            var leftHandValue = leftHandInput ? leftHandSnapTurnAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
-            var rightHandValue = rightHandInput ? rightHandSnapTurnAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
-
+            var leftHandValue = _LeftHandInput ? leftHandSnapTurnAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
+            var rightHandValue = _RightHandInput ? rightHandSnapTurnAction.action?.ReadValue<Vector2>() ?? Vector2.zero : Vector2.zero;
             return leftHandValue + rightHandValue;
         }
-
-        public void EnableLeftHandInput(bool enable) => leftHandInput = enable;
-
-        public void EnableRightHandInput(bool enable) => rightHandInput = enable;
+        #endregion
 
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (screenFade == null)
-                screenFade = FindObjectOfType<ScreenFade>();
+            if (_ScreenFade == null)
+                _ScreenFade = FindObjectOfType<ScreenFade>();
 
-            if (_useBlink && screenFade != null)
+            if (_useBlink && _ScreenFade != null)
             {
-                float fadesTime = fadeInTime > 0f ? fadeInTime : screenFade.DefaultFadeTime
-                    + fadeOutTime > 0f ? fadeOutTime : screenFade.DefaultFadeTime;
+                float fadesTime = _FadeInTime > 0f ? _FadeInTime : _ScreenFade.DefaultFadeTime
+                    + _FadeOutTime > 0f ? _FadeOutTime : _ScreenFade.DefaultFadeTime;
                 debounceTime = Mathf.Max(debounceTime, fadesTime);
             }
         }
