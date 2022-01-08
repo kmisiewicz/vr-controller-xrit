@@ -355,7 +355,7 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: -8198699208435500284, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   _Body: {fileID: 2318412976257563255}
-  _InAirMultiplier: 1
+  _InAirControlMultiplier: 0.25
   _GravityProvider: {fileID: 0}
   StartedMoving:
     m_PersistentCalls:

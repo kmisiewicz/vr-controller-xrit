@@ -7,6 +7,9 @@ namespace Chroma.Utility.Editor
     {
         const float SUB_LABEL_SPACING = 5;
 
+        /// <summary>
+        /// Draws multiple property fields in one line (row) in a given <paramref name="position"/>.
+        /// </summary>
         public static void DrawMultiplePropertyFieldsInLine(Rect position, GUIContent[] subLabels, SerializedProperty[] properties)
         {
             // backup gui settings
@@ -30,6 +33,9 @@ namespace Chroma.Utility.Editor
             EditorGUI.indentLevel = indent;
         }
 
+        /// <summary>
+        /// Draws multiple property fields from <paramref name="properties"/>.
+        /// </summary>
         public static void DrawMultiplePropertyFields(SerializedProperty[] properties)
         {
             foreach (var property in properties)

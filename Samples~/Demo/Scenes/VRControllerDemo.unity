@@ -697,6 +697,14 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1116259280}
+    - target: {fileID: 2318412976257563242, guid: 1e4f6b97952affb449c6a2985a74efeb, type: 3}
+      propertyPath: _GravityProvider
+      value: 
+      objectReference: {fileID: 1219304052}
+    - target: {fileID: 2318412976257563242, guid: 1e4f6b97952affb449c6a2985a74efeb, type: 3}
+      propertyPath: _SlopeControlMultiplier
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 2318412976257563249, guid: 1e4f6b97952affb449c6a2985a74efeb, type: 3}
       propertyPath: m_Name
       value: Player
@@ -5330,6 +5338,17 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1209620336}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1219304052 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8097711828881865924, guid: 1e4f6b97952affb449c6a2985a74efeb, type: 3}
+  m_PrefabInstance: {fileID: 263187377}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f95c2eeb97b40c408b2a3a59ebd6b2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1285071356
 GameObject:
   m_ObjectHideFlags: 0
