@@ -23,6 +23,11 @@
 			"displayName": "Demo & Prefabs",
 			"description": "Contains pre-configured prefabs & demo scene.",
 			"path": "Samples~/Demo"
+		},
+		{
+			"displayName": "World Debug Console",
+			"description": "Contains prefab of world space canvas that mirrors Unity debug console.",
+			"path": "Samples~/WorldConsole"
 		}
 	]
 }
