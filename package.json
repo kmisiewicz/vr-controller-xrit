@@ -1,12 +1,13 @@
 {
 	"name": "com.chroma.vrcontroller",
-	"version": "1.0.0-pre.3",
+	"version": "1.0.0-pre.4",
 	"displayName": "VR Character Controller for XR Interaction Toolkit",
 	"description": "This package contains a custom VR player controller based on Unity's XR Interaction Toolkit.",
 	"unity": "2020.3",
 	"dependencies": {
 		"com.unity.xr.interaction.toolkit": "2.0.0-pre.6",
-		"com.unity.inputsystem": "1.2.0"
+		"com.unity.inputsystem": "1.2.0",
+		"com.unity.textmeshpro": "3.0.6"
 	},
 	"keywords": [
 		"vr",

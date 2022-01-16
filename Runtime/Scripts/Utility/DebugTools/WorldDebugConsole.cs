@@ -8,7 +8,7 @@ namespace Chroma.Utility.DebugTools
 {
     public class WorldDebugConsole : MonoBehaviour
     {
-        [SerializeField, Min(0)] 
+        [SerializeField, Min(1)] 
         int _MaxMessagesCount = 15;
 
         [SerializeField, OnValueChanged("AdjustMessageHeight")]
@@ -21,13 +21,13 @@ namespace Chroma.Utility.DebugTools
         EnumNamedArray<Color> _LogTypesColors = new EnumNamedArray<Color>(typeof(LogType));
 
         [SerializeField]
-        GameObject _LogPrefab;
+        WorldDebugLog _LogPrefab;
 
         [SerializeField, Tooltip("Transform that the logs should be childed to.")]
-        Transform _ContentRoot;
+        Transform _LogsParent;
 
         [SerializeField]
-        ScrollRect _ScrollRect;
+        ScrollRect _LogsScrollView;
 
         [SerializeField]
         GameObject _StackTracePanel;
@@ -69,7 +69,7 @@ namespace Chroma.Utility.DebugTools
 
                 if (logObjects.Count < _MaxMessagesCount)
                 {
-                    currentLog = Instantiate(_LogPrefab, _ContentRoot).GetComponent<WorldDebugLog>();
+                    currentLog = Instantiate(_LogPrefab, _LogsParent);
                     if (currentLog.TryGetComponent(out LayoutElement layoutElement))
                         layoutElement.preferredHeight = _MessageSize;
                 }
@@ -85,7 +85,7 @@ namespace Chroma.Utility.DebugTools
                     logObjects.Enqueue(currentLog);
                     _messages.Enqueue(log);
                     _stackTraces.Enqueue(stackTrace);
-                    _ScrollRect.verticalNormalizedPosition = 0;
+                    _LogsScrollView.verticalNormalizedPosition = 0;
                 }
             }
         }
@@ -94,7 +94,7 @@ namespace Chroma.Utility.DebugTools
         {
             _StackTracePanel?.SetActive(true);
             _StackTraceText?.SetText(stackTrace);
-            _ScrollRect.verticalNormalizedPosition = 0;
+            _LogsScrollView.verticalNormalizedPosition = 0;
         }
 
         private void AdjustMessageHeight()

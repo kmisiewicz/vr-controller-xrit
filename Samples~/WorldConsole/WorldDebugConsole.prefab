@@ -37,8 +37,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.8}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.15, y: 0}
-  m_SizeDelta: {x: 0.2526461, y: 0}
+  m_AnchoredPosition: {x: -0.15000153, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6156060757428283110
 CanvasRenderer:
@@ -403,8 +403,8 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6156060757752547472}
-  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 6}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 6156060759335259720}
@@ -412,10 +412,10 @@ RectTransform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -1.01, y: 1.57}
-  m_SizeDelta: {x: 5, y: 3.15}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 4, y: 3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &6156060757752547469
 Canvas:
@@ -532,9 +532,9 @@ MonoBehaviour:
     - {r: 1, g: 0.8313726, b: 0.3254902, a: 1}
     - {r: 0.21568629, g: 0.627451, b: 0.9490197, a: 1}
     - {r: 0.92941177, g: 0.4349446, b: 0.16470584, a: 1}
-  _LogPrefab: {fileID: 3499558706559916886, guid: 95b87645a4b53b34f845522fe607a3ac, type: 3}
-  _ContentRoot: {fileID: 6156060759281776516}
-  _ScrollRect: {fileID: 6156060757579067770}
+  _LogPrefab: {fileID: 8249452532793615045, guid: 95b87645a4b53b34f845522fe607a3ac, type: 3}
+  _LogsParent: {fileID: 6156060759281776516}
+  _LogsScrollView: {fileID: 6156060757579067770}
   _StackTracePanel: {fileID: 6156060758943326055}
   _StackTraceText: {fileID: 6156060759457402252}
 --- !u!1 &6156060758085321844
@@ -1180,7 +1180,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 0.25
+  m_fontSize: 0.2
   m_fontSizeBase: 1
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1556,7 +1556,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 0.85
+  m_fontSize: 0.7
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

@@ -6,7 +6,8 @@
         "Unity.XR.CoreUtils",
         "Unity.XR.Interaction.Toolkit",
         "Unity.RenderPipelines.Universal.Runtime",
-        "Unity.RenderPipelines.Core.Runtime"
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
